@@ -1,4 +1,4 @@
-#create sql queries for reference.
+#SQL Queries based on Example Db.
 
 1.	Which category has maximum products 
 SELECT category_code, COUNT(product_code)
