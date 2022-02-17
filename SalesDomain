@@ -1,3 +1,4 @@
+#Sales Domain Question with Answer
 1.	Which category has maximum products 
 SELECT category_code, COUNT(product_code)
 FROM product
