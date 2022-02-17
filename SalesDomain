@@ -1,3 +1,5 @@
+#create sql queries for reference.
+
 1.	Which category has maximum products 
 SELECT category_code, COUNT(product_code)
 FROM product
