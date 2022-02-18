@@ -1,4 +1,4 @@
-#SQL commands for basic 
+#SQL commands for basic (Sales Domain) 
 
 1.	Which category has maximum products 
 SELECT category_code, COUNT(product_code)
