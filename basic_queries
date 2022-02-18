@@ -1,0 +1,119 @@
+select CATEGORY_CODE, count(product_code)
+from product 
+group by category_code
+having count(product_code) not in (select count(product_code)
+									from product
+                                    group by category_code)
+                                    
+
+select product_code, price, prod_desc, category_code
+from product
+where price = (select max(price) from product)
+
+select category_code, max(price) as Price
+from product
+
+select category_code, sum(qty_on_hand)
+from product
+group by category_code
+having sum(qty_on_hand) >= all (select sum(qty_on_hand) from product
+								group by category_code)
+
+select category_code, price
+from product
+order by price desc
+
+select category_code,prod_desc,price
+from (select category_code,prod_desc,price,dense_rank() over (partition by category_code order by price desc) as rk
+from product) tmp
+where rk = 1
+
+select pro.category_code,pro.product_code,pro.prod_desc,pro.qty_on_hand
+from product pro
+where pro.qty_on_hand = ( select min(pt.qty_on_hand)
+							from product pt
+                            where pt.category_code = pro.category_code
+                            group by pt.category_code)
+                            
+select order_code,count(product_code) as Total_product
+from order_detail 
+group by order_code
+having count(product_code) >= all (select count(product_code)
+								from order_detail 
+                                group by order_code)
+                                
+select product_code,count(order_code)
+from order_detail
+group by product_code,order_code
+having count(order_code) not in (select count(order_code)
+									from order_detail
+                                    group by product_code)
+                                    
+select * from order_detail
+
+select order_code,sum(qty_ordered*price)
+from product pd join order_detail od 
+on pd.product_code = od.product_code  
+group by order_code
+having sum(qty_ordered*price) >= all (select sum(qty_ordered*price)
+										from product pd join order_detail od
+                                        on pd.product_code = od.product_code
+                                        group by order_code);
+select * from order_detail;
+select * from product								;	
+
+select od.order_code,om.order_date,sum(qty_ordered*price)
+from product pd join order_detail od
+on pd.product_code = od.product_code join order_master om
+on od.order_code = om.order_code
+group by order_code
+having sum(qty_ordered*price) >= all (select sum(qty_ordered*price)
+										from product pd join order_detail od
+                                        on pd.product_code = od.product_code
+                                        group by order_code)
+
+select om.customer_code,sum(qty_ordered*price),cus.customer_name
+from customer cus join order_master om
+on cus.customer_code = om.customer_code join order_detail od
+on od.order_code = om.order_code join product pd
+on od.product_code = pd.product_code
+group by od.order_code
+having sum(qty_ordered*price) >= all (select sum(qty_ordered*price)
+										from product pd join order_detail od
+                                        on od.product_code = pd.product_code
+                                        group by order_code)
+
+select om.customer_code,om.order_code,sum(qty_ordered*price),om.order_date
+from order_master om join order_detail od
+on om.order_code = od.order_code join product pd
+on od.product_code = pd.product_code
+group by order_code
+having om.order_date = current_date
+
+select * from customer
+alter table customer
+add ADDRESS varchar(1000)
+
+update customer
+set address = "INDIA"
+where customer_code =  "CU10"
+
+select * from order_master
+
+create view List_of_data as (select cus.customer_name,cus.address,om.order_code,om.order_date,count(od.product_code) as NO_of_products_ordered ,sum(qty_ordered*price) as Total_Bill
+from customer cus join order_master om
+on cus.customer_code  = om.customer_code join order_detail od
+on om.order_code = od.order_code  join product pd
+on pd.product_code = od.product_code
+group by om.order_code,cus.customer_name,om.order_date);
+select * from List_of_data
+
+select cus.customer_name,cus.address,om.order_code,om.order_date,count(od.product_code) as NO_of_products_ordered ,sum(qty_ordered*price) as Total_Bill,
+case 
+when sum(qty_ordered*price) > 300000 then 'eligible for home deliver' else 'not eligible'
+end status
+from customer cus join order_master om
+on cus.customer_code  = om.customer_code join order_detail od
+on om.order_code = od.order_code  join product pd
+on pd.product_code = od.product_code
+group by om.order_code,cus.customer_name,om.order_date
